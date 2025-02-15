@@ -21,6 +21,22 @@ router.get("/", authMiddleware, messageController.getMessages);
 
 /**
  * @swagger
+ * /messages/contacts:
+ *   get:
+ *     summary: Récupère les contacts de l'utilisateur connecté (message envoyé ou reçu d'un au utilisateur)
+ *     tags: [Messages]
+ *     responses:
+ *       200:
+ *         description: Liste des contacts récupérée avec succès
+ *       401:
+ *         description: Token manquant ou invalide
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get("/contacts", authMiddleware, messageController.getContacts);
+
+/**
+ * @swagger
  * /messages:
  *   post:
  *     summary: Crée un nouveau message avec expéditeur et destinataire

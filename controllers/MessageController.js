@@ -28,6 +28,50 @@ exports.getMessages = async (req, res) => {
     }
 };
 
+exports.getContacts = async (req, res) => {
+    try {add con
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ error: "Token manquant ou invalide" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+
+        const messages = await Message.find({
+            $or: [{ sender: userId }, { receiver: userId }]
+        }).sort({ createdAt: -1 });
+
+        const contactsMap = new Map();
+
+        messages.forEach(message => {
+            let contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
+
+            if (!contactsMap.has(contactId)) {
+                contactsMap.set(contactId, {
+                    lastMessage: message.message,
+                    lastMessageTime: message.createdAt
+                });
+            }
+        });
+
+        const contactIds = [...contactsMap.keys()];
+        const contacts = await User.find({ _id: { $in: contactIds } }).select("name email");
+
+        const contactList = contacts.map(contact => ({
+            _id: contact._id,
+            name: contact.name,
+            email: contact.email,
+            lastMessage: contactsMap.get(contact._id.toString()).lastMessage,
+            lastMessageTime: contactsMap.get(contact._id.toString()).lastMessageTime
+        }));
+
+        res.status(200).json(contactList);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération des contacts" });
+    }
+};
+
 exports.createMessage = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
