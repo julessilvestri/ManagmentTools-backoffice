@@ -8,8 +8,9 @@ const socketIo = require('socket.io');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
-const messageRoutes = require('./routes/messages');
+const messagesRoutes = require('./routes/messages');
 const authRoutes = require('./routes/auth');
+const usersRoutes = require('./routes/users');
 
 require('dotenv').config({ path: '.env.local' });
 
@@ -56,13 +57,19 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/messages', messageRoutes);
+app.use('/api/v1/messages', messagesRoutes);
+app.use('/api/v1/users', usersRoutes);
 
 // 🔥 Démarrer le serveur seulement si ce n'est pas un test
-if (process.env.NODE_ENV !== 'test') {
-    const PORT = process.env.PORT || 3000;
-    server.listen(PORT, () => console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`));
+if (process.env.NODE_ENV !== "test") {
+    mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
+    .then(() => console.log("✅ Connecté à MongoDB"))
+    .catch(err => console.error("❌ Erreur de connexion à MongoDB:", err));
 }
+
 
 // ✅ On exporte `app` et `server` (pour les tests)
 module.exports = { app, server };

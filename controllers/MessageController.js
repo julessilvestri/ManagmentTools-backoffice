@@ -72,6 +72,40 @@ exports.getContacts = async (req, res) => {
     }
 };
 
+exports.getConversation = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({ error: "Token manquant ou invalide" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+        const otherUserId = req.params.userId; // ID de l'autre utilisateur
+
+        if (!otherUserId) {
+            return res.status(400).json({ error: "L'ID de l'autre utilisateur est requis." });
+        }
+
+        // Récupérer tous les messages entre les deux utilisateurs
+        const messages = await Message.find({
+            $or: [
+                { sender: userId, receiver: otherUserId },
+                { sender: otherUserId, receiver: userId }
+            ]
+        })
+        .sort({ createdAt: 1 }) // Trier les messages par date croissante
+        .populate("sender", "name email")
+        .populate("receiver", "name email");
+
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des messages :", error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+};
+
 exports.createMessage = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
