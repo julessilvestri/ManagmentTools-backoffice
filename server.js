@@ -12,24 +12,31 @@ const messagesRoutes = require('./routes/messages');
 const authRoutes = require('./routes/auth');
 const usersRoutes = require('./routes/users');
 
-require('dotenv').config({ path: '.env.local' });
+// Charger les variables d'environnement
+dotenv.config({ path: '.env.local' });
 
+// Création de l'application Express et du serveur HTTP
 const app = express();
-const server = http.createServer(app); // Création du serveur HTTP pour WebSockets
+const server = http.createServer(app);
+
+// Configuration de Socket.IO
 const io = socketIo(server, {
     cors: {
-        origin: "*", // Autorise toutes les origines (à sécuriser en production)
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
-mongoose.connect(process.env.MONGO_URI).then(() => console.log("✅ Connecté à MongoDB"))
-.catch(err => console.error("❌ Erreur de connexion à MongoDB:", err));
+// Connexion à MongoDB
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ Connecté à MongoDB"))
+    .catch(err => console.error("❌ Erreur de connexion à MongoDB:", err));
 
 // Middlewares globaux
-app.use(cors());
+app.use(cors()); // Devrait être limité à des origines spécifiques en production
 app.use(express.json());
 
+// Configuration Swagger
 const swaggerOptions = {
     definition: {
         openapi: "3.0.0",
@@ -53,23 +60,21 @@ const swaggerOptions = {
     apis: ["./routes/*.js"]
 };
 
+// Initialisation de la documentation Swagger
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Routes API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/messages', messagesRoutes);
 app.use('/api/v1/users', usersRoutes);
 
-// 🔥 Démarrer le serveur seulement si ce n'est pas un test
+// Démarrer le serveur seulement si ce n'est pas un test
 if (process.env.NODE_ENV !== "test") {
-    mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    })
-    .then(() => console.log("✅ Connecté à MongoDB"))
-    .catch(err => console.error("❌ Erreur de connexion à MongoDB:", err));
+    server.listen(process.env.PORT || 3000, () => {
+        console.log(`✅ Serveur démarré sur le port ${process.env.PORT || 3000}`);
+    });
 }
 
-
-// ✅ On exporte `app` et `server` (pour les tests)
+// Exporter l'app et le serveur pour les tests
 module.exports = { app, server };
