@@ -2,61 +2,53 @@ const Message = require('../models/Message');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
+// Middleware de vérification du token
+const verifyToken = (req) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) throw new Error("Token manquant ou invalide");
+    return jwt.verify(token, process.env.JWT_SECRET);
+};
+
+// Fonction de gestion des erreurs
+const handleError = (res, error, statusCode = 500) => {
+    console.error(error);
+    res.status(statusCode).json({ error: error.message || "Erreur serveur" });
+};
+
 exports.getMessages = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
-
-        if (!token) {
-            return res.status(401).json({ error: "Token manquant ou invalide" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verifyToken(req);
         const userId = decoded.userId;
-
-        const messages = await Message.find({
-            $or: [
-                { sender: userId },
-                { receiver: userId }
-            ]
-        }).populate('sender', 'name email')
-          .populate('receiver', 'name email');
-
+        const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
+            .populate('sender', 'name email')
+            .populate('receiver', 'name email');
         res.status(200).json(messages);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Erreur lors de la récupération des messages" });
+        handleError(res, error, 401);
     }
 };
 
 exports.getContacts = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-            return res.status(401).json({ error: "Token manquant ou invalide" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verifyToken(req);
         const userId = decoded.userId;
 
-        const messages = await Message.find({
-            $or: [{ sender: userId }, { receiver: userId }]
-        }).sort({ createdAt: -1 });
+        const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
+            .sort({ createdAt: -1 });
 
-        const contactsMap = new Map();
-
-        messages.forEach(message => {
-            let contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
-
-            if (!contactsMap.has(contactId)) {
-                contactsMap.set(contactId, {
+        const contactsMap = messages.reduce((map, message) => {
+            const contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
+            if (!map.has(contactId)) {
+                map.set(contactId, {
                     lastMessage: message.message,
                     lastMessageTime: message.createdAt
                 });
             }
-        });
+            return map;
+        }, new Map());
 
-        const contactIds = [...contactsMap.keys()];
-        const contacts = await User.find({ _id: { $in: contactIds } }).select("name email");
+        const contacts = await User.find({ _id: { $in: [...contactsMap.keys()] } })
+            .select("name email");
 
         const contactList = contacts.map(contact => ({
             _id: contact._id,
@@ -68,65 +60,44 @@ exports.getContacts = async (req, res) => {
 
         res.status(200).json(contactList);
     } catch (error) {
-        res.status(500).json({ error: "Erreur lors de la récupération des contacts" });
+        handleError(res, error, 401);
     }
 };
 
 exports.getConversation = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
-
-        if (!token) {
-            return res.status(401).json({ error: "Token manquant ou invalide" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verifyToken(req);
         const userId = decoded.userId;
-        const otherUserId = req.params.userId; // ID de l'autre utilisateur
+        const otherUserId = req.params.userId;
 
-        if (!otherUserId) {
-            return res.status(400).json({ error: "L'ID de l'autre utilisateur est requis." });
-        }
+        if (!otherUserId) throw new Error("L'ID de l'autre utilisateur est requis.");
 
-        // Récupérer tous les messages entre les deux utilisateurs
         const messages = await Message.find({
             $or: [
                 { sender: userId, receiver: otherUserId },
                 { sender: otherUserId, receiver: userId }
             ]
         })
-        .sort({ createdAt: 1 }) // Trier les messages par date croissante
-        .populate("sender", "name email")
-        .populate("receiver", "name email");
+            .sort({ createdAt: 1 })
+            .populate("sender", "name email")
+            .populate("receiver", "name email");
 
         res.status(200).json(messages);
     } catch (error) {
-        console.error("Erreur lors de la récupération des messages :", error);
-        res.status(500).json({ error: "Erreur serveur" });
+        handleError(res, error, 400);
     }
 };
 
 exports.createMessage = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
-
-        if (!token) {
-            return res.status(401).json({ error: "Token manquant ou invalide" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verifyToken(req);
         const userId = decoded.userId;
-        
-        const sender = await User.findById(userId);
-        if (!sender) {
-            return res.status(404).json({ error: "Expéditeur non trouvé" });
-        }
-
         const { receiverId, message } = req.body;
+
+        const sender = await User.findById(userId);
         const receiver = await User.findById(receiverId);
-        if (!receiver) {
-            return res.status(404).json({ error: "Destinataire non trouvé" });
-        }
+
+        if (!sender || !receiver) throw new Error("Expéditeur ou destinataire introuvable");
 
         const newMessage = new Message({
             message,
@@ -135,39 +106,25 @@ exports.createMessage = async (req, res) => {
         });
 
         await newMessage.save();
-
         res.status(201).json({ message: "Message ajouté avec succès", data: newMessage });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Erreur serveur" });
+    } catch (error) {
+        handleError(res, error, 404);
     }
 };
 
 exports.deleteMessage = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
-        
-        if (!token) {
-            return res.status(401).json({ error: "Token manquant ou invalide" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verifyToken(req);
         const userId = decoded.userId;
 
         const message = await Message.findById(req.params.id);
-        if (!message) {
-            return res.status(404).json({ error: "Message introuvable" });
-        }
+        if (!message) throw new Error("Message introuvable");
 
-        if (message.sender.toString() !== userId) {
-            return res.status(403).json({ error: "Accès interdit : vous ne pouvez supprimer que vos propres messages" });
-        }
+        if (message.sender.toString() !== userId) throw new Error("Accès interdit : vous ne pouvez supprimer que vos propres messages");
 
         await Message.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: "Message supprimé avec succès" });
-
     } catch (error) {
-        console.error("❌ Erreur lors de la suppression du message :", error);
-        res.status(500).json({ error: "Erreur lors de la suppression du message" });
+        handleError(res, error, 403);
     }
 };

@@ -2,19 +2,18 @@ const User = require("../models/User");
 
 exports.searchUser = async (req, res) => {
     try {
-        const { query } = req.query; // Récupère le paramètre de recherche
+        const { query } = req.query;
 
         if (!query) {
             return res.status(400).json({ error: "Veuillez fournir un username ou un email à rechercher." });
         }
 
-        // Rechercher par nom ou email (insensible à la casse)
         const users = await User.find({
             $or: [
                 { name: { $regex: query, $options: "i" } },
                 { email: { $regex: query, $options: "i" } }
             ]
-        }).select("name email"); // On ne renvoie que le nom et l'email
+        }).select("name email");
 
         res.status(200).json(users);
     } catch (error) {
