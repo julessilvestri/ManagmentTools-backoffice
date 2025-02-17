@@ -34,14 +34,16 @@ exports.getContacts = async (req, res) => {
         const userId = decoded.userId;
 
         const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
-            .sort({ createdAt: 1 });
+            .sort({ createdAt: -1 });
 
         const contactsMap = messages.reduce((map, message) => {
             const contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
             if (!map.has(contactId)) {
                 map.set(contactId, {
                     lastMessage: message.message,
-                    lastMessageTime: message.createdAt
+                    lastMessageTime: message.createdAt,
+                    sender: message.sender,
+                    receiver: message.receiver
                 });
             }
             return map;
@@ -55,7 +57,9 @@ exports.getContacts = async (req, res) => {
             name: contact.name,
             email: contact.email,
             lastMessage: contactsMap.get(contact._id.toString()).lastMessage,
-            lastMessageTime: contactsMap.get(contact._id.toString()).lastMessageTime
+            lastMessageTime: contactsMap.get(contact._id.toString()).lastMessageTime,
+            sender: contactData.sender,
+            receiver: contactData.receiver
         }));
 
         res.status(200).json(contactList);
