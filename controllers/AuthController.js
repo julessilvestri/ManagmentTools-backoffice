@@ -13,10 +13,10 @@ const handleError = (res, error, statusCode = 500) => {
 const verifyUserCredentials = async (email, password) => {
     const user = await User.findOne({ email });
     if (!user) throw new Error("Identifiants invalides");
-
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Identifiants invalides");
-
+    
     return user;
 };
 
@@ -56,7 +56,7 @@ exports.login = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        
+
         const { email, password } = req.body;
 
         // Vérifier les identifiants de l'utilisateur
@@ -64,10 +64,6 @@ exports.login = async (req, res) => {
 
         // Générer un token JWT
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        // Créer des cookies avec `secure: false` pour HTTP
-        res.cookie("toke", token, { httpOnly: false, secure: false, maxAge: 3600000 });
-        res.cookie("userId", user._id, { httpOnly: false, secure: false, maxAge: 3600000 });
 
         res.status(200).json({ token, userId: user._id });
     } catch (error) {
