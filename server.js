@@ -19,28 +19,12 @@ dotenv.config({ path: '.env.local' });
 const app = express();
 const server = http.createServer(app);
 
-// Configuration de Socket.IO pour accepter les cookies
-const io = socketIo(server, {
-    cors: {
-        origin: "http://localhost:3000", // Remplacez par l'URL de votre front-end local
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true // Permet l'envoi de cookies
-    }
-});
-
 // Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ Connecté à MongoDB"))
     .catch(err => console.error("❌ Erreur de connexion à MongoDB:", err));
 
-// Middlewares globaux
-const corsOptions = {
-  origin: 'http://localhost:3000', // Remplacez par l'URL de votre front-end local
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true // Permet l'envoi de cookies
-};
-
-app.use(cors(corsOptions)); // Utilisation de la configuration CORS
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
