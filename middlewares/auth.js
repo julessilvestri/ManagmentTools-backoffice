@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 module.exports = async (req, res, next) => {
-    try {
+    // try {
         const token = req.cookies.token; // Accéder au cookie du token
         const userId = req.cookies.userId; // Accéder au cookie de l'ID utilisateur
 
@@ -18,7 +18,7 @@ module.exports = async (req, res, next) => {
 
         req.userId = decoded.userId; // Vous pouvez également ajouter l'ID de l'utilisateur à `req` pour l'utiliser dans vos routes
         next();
-    } catch (error) {
-        res.status(401).json({ error: "Token invalide ou expiré" });
-    }
+    // } catch (error) {
+    //     res.status(401).json({ error: "Token invalide ou expiré" });
+    // }
 };
