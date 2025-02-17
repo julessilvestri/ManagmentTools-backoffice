@@ -35,7 +35,7 @@ exports.getContacts = async (req, res) => {
 
         // Récupérer tous les messages où l'utilisateur est soit l'expéditeur, soit le destinataire
         const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
-            .sort({ createdAt: -1 }); // Tri des messages par date décroissante (du plus récent au plus ancien)
+            .sort({ createdAt: -1 }); // Tri des messages par date décroissante
 
         const contactsMap = new Map();
 
@@ -43,33 +43,30 @@ exports.getContacts = async (req, res) => {
         messages.forEach(message => {
             const contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
 
-            // Si ce contact n'a pas encore de message dans la carte ou si le message est plus récent que le dernier enregistré
             if (!contactsMap.has(contactId) || message.createdAt > contactsMap.get(contactId).lastMessageTime) {
                 contactsMap.set(contactId, {
                     lastMessage: message.message,
                     lastMessageTime: message.createdAt,
-                    sender: message.sender, // Ajouter l'expéditeur
-                    receiver: message.receiver // Ajouter le destinataire
+                    sender: message.sender,
+                    receiver: message.receiver
                 });
             }
         });
 
         // Récupérer les informations des contacts
         const contacts = await User.find({ _id: { $in: [...contactsMap.keys()] } })
-            .select("name email"); // Sélectionner uniquement "name" et "email"
+            .select("name email");
 
-        // Récupérer également les informations des expéditeurs et destinataires pour chaque message
+        // Récupérer les informations des expéditeurs et destinataires
         const senderIds = [...new Set(messages.map(message => message.sender.toString()))];
         const receiverIds = [...new Set(messages.map(message => message.receiver.toString()))];
 
         const senders = await User.find({ _id: { $in: senderIds } }).select("name email");
         const receivers = await User.find({ _id: { $in: receiverIds } }).select("name email");
 
-        // Créer la liste des contacts avec leur dernier message, sender, receiver et détails supplémentaires
+        // Créer la liste des contacts avec leur dernier message, triée par lastMessageTime
         const contactList = contacts.map(contact => {
             const contactData = contactsMap.get(contact._id.toString());
-
-            // Trouver les informations de l'expéditeur et du destinataire
             const senderDetails = senders.find(sender => sender._id.toString() === contactData.sender.toString());
             const receiverDetails = receivers.find(receiver => receiver._id.toString() === contactData.receiver.toString());
 
@@ -90,13 +87,14 @@ exports.getContacts = async (req, res) => {
                     email: receiverDetails.email
                 }
             };
-        });
+        }).sort((a, b) => b.lastMessageTime - a.lastMessageTime);
 
         res.status(200).json(contactList);
     } catch (error) {
         handleError(res, error, 401);
     }
 };
+
 
 exports.getConversation = async (req, res) => {
     try {
