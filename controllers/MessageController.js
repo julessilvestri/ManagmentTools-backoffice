@@ -56,19 +56,39 @@ exports.getContacts = async (req, res) => {
 
         // Récupérer les informations des contacts
         const contacts = await User.find({ _id: { $in: [...contactsMap.keys()] } })
-            .select("name email");
+            .select("name email"); // Sélectionner uniquement "name" et "email"
 
-        // Créer la liste des contacts avec leur dernier message, sender, et receiver
+        // Récupérer également les informations des expéditeurs et destinataires pour chaque message
+        const senderIds = [...new Set(messages.map(message => message.sender.toString()))];
+        const receiverIds = [...new Set(messages.map(message => message.receiver.toString()))];
+
+        const senders = await User.find({ _id: { $in: senderIds } }).select("name email");
+        const receivers = await User.find({ _id: { $in: receiverIds } }).select("name email");
+
+        // Créer la liste des contacts avec leur dernier message, sender, receiver et détails supplémentaires
         const contactList = contacts.map(contact => {
-            const contactData = contactsMap.get(contact._id.toString()); // Correctement défini ici
+            const contactData = contactsMap.get(contact._id.toString());
+
+            // Trouver les informations de l'expéditeur et du destinataire
+            const senderDetails = senders.find(sender => sender._id.toString() === contactData.sender.toString());
+            const receiverDetails = receivers.find(receiver => receiver._id.toString() === contactData.receiver.toString());
+
             return {
                 _id: contact._id,
                 name: contact.name,
                 email: contact.email,
                 lastMessage: contactData.lastMessage,
                 lastMessageTime: contactData.lastMessageTime,
-                sender: contactData.sender, // Ajouter l'expéditeur
-                receiver: contactData.receiver // Ajouter le destinataire
+                sender: {
+                    _id: senderDetails._id,
+                    name: senderDetails.name,
+                    email: senderDetails.email
+                },
+                receiver: {
+                    _id: receiverDetails._id,
+                    name: receiverDetails.name,
+                    email: receiverDetails.email
+                }
             };
         });
 
@@ -77,6 +97,7 @@ exports.getContacts = async (req, res) => {
         handleError(res, error, 401);
     }
 };
+
 
 
 exports.getConversation = async (req, res) => {
