@@ -33,40 +33,51 @@ exports.getContacts = async (req, res) => {
         const decoded = verifyToken(req);
         const userId = decoded.userId;
 
+        // Récupérer tous les messages où l'utilisateur est soit l'expéditeur, soit le destinataire
         const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 }); // Tri des messages par date décroissante (du plus récent au plus ancien)
 
-        const contactsMap = messages.reduce((map, message) => {
+        const contactsMap = new Map();
+
+        // Parcourir les messages et mettre à jour la carte avec le dernier message
+        messages.forEach(message => {
             const contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
-            if (!map.has(contactId)) {
-                map.set(contactId, {
+
+            // Si ce contact n'a pas encore de message dans la carte ou si le message est plus récent que le dernier enregistré
+            if (!contactsMap.has(contactId) || message.createdAt > contactsMap.get(contactId).lastMessageTime) {
+                contactsMap.set(contactId, {
                     lastMessage: message.message,
                     lastMessageTime: message.createdAt,
-                    sender: message.sender,
-                    receiver: message.receiver
+                    sender: message.sender, // Ajouter l'expéditeur
+                    receiver: message.receiver // Ajouter le destinataire
                 });
             }
-            return map;
-        }, new Map());
+        });
 
+        // Récupérer les informations des contacts
         const contacts = await User.find({ _id: { $in: [...contactsMap.keys()] } })
             .select("name email");
 
-        const contactList = contacts.map(contact => ({
-            _id: contact._id,
-            name: contact.name,
-            email: contact.email,
-            lastMessage: contactsMap.get(contact._id.toString()).lastMessage,
-            lastMessageTime: contactsMap.get(contact._id.toString()).lastMessageTime,
-            sender: contactData.sender,
-            receiver: contactData.receiver
-        }));
+        // Créer la liste des contacts avec leur dernier message, sender, et receiver
+        const contactList = contacts.map(contact => {
+            const contactData = contactsMap.get(contact._id.toString()); // Correctement défini ici
+            return {
+                _id: contact._id,
+                name: contact.name,
+                email: contact.email,
+                lastMessage: contactData.lastMessage,
+                lastMessageTime: contactData.lastMessageTime,
+                sender: contactData.sender, // Ajouter l'expéditeur
+                receiver: contactData.receiver // Ajouter le destinataire
+            };
+        });
 
         res.status(200).json(contactList);
     } catch (error) {
         handleError(res, error, 401);
     }
 };
+
 
 exports.getConversation = async (req, res) => {
     try {
