@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 // Middleware de vérification du token
 const verifyToken = (req) => {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) throw new Error("Token manquant ou invalide");
+    if (!token) throw new Error("Token manquan ou invalide");
     return jwt.verify(token, process.env.JWT_SECRET);
 };
 
