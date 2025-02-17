@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 const socketIo = require('socket.io');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-
+const cookieParser = require('cookie-parser');
 const messagesRoutes = require('./routes/messages');
 const authRoutes = require('./routes/auth');
 const usersRoutes = require('./routes/users');
@@ -36,6 +36,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Middlewares globaux
 app.use(cors()); // Devrait être limité à des origines spécifiques en production
 app.use(express.json());
+app.use(cookieParser());
 
 // Configuration Swagger
 const swaggerOptions = {
