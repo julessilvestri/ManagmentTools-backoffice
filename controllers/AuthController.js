@@ -59,14 +59,39 @@ exports.login = async (req, res) => {
 
         const { email, password } = req.body;
 
-        // Vérifier les identifiants de l'utilisateur
-        const user = await verifyUserCredentials(email, password);
+        // Vérifier si l'utilisateur existe
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: "Identifiants invalides" });
+        }
+
+        // Vérifier le mot de passe
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Identifiants invalides" });
+        }
 
         // Générer un token JWT
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.status(200).json({ token, userId: user._id });
+        // Définir un cookie avec le token et l'ID de l'utilisateur
+        res.cookie('token', token, {
+            httpOnly: true,  // Empêche l'accès au cookie depuis le client JavaScript
+            secure: process.env.NODE_ENV === 'production', // Assurez-vous que le cookie est envoyé en HTTPS en production
+            maxAge: 3600000, // Le cookie expire après 1 heure (3600000 ms)
+            sameSite: 'Strict' // Empêche l'envoi du cookie sur des requêtes cross-origin
+        });
+
+        res.cookie('userId', user._id.toString(), {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600000,
+            sameSite: 'Strict'
+        });
+
+        // Répondre avec un message de succès
+        res.status(200).json({ message: "Connexion réussie" });
     } catch (error) {
-        handleError(res, error, 400);
+        res.status(500).json({ error: "Erreur serveur" });
     }
 };
