@@ -98,8 +98,6 @@ exports.getContacts = async (req, res) => {
     }
 };
 
-
-
 exports.getConversation = async (req, res) => {
     try {
         const decoded = verifyToken(req);
