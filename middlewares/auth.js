@@ -3,17 +3,22 @@ const User = require('../models/User');
 
 module.exports = async (req, res, next) => {
     try {
-        const token = req.header("Authorization").replace("Bearer ", "");
-        if (!token) return res.status(401).json({ error: "Accès refusé, token manquant !" });
+        const token = req.cookies.token; // Accéder au cookie du token
+        const userId = req.cookies.userId; // Accéder au cookie de l'ID utilisateur
+
+        if (!token || !userId) {
+            return res.status(401).json({ error: "Accès non autorisé, veuillez vous connecter" });
+        }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        if (decoded.userId !== userId) {
+            return res.status(401).json({ error: "Utilisateur non valide" });
+        }
 
-        const user = await User.findById(decoded.userId);
-        if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
-
-        req.user = user;
+        req.userId = decoded.userId; // Vous pouvez également ajouter l'ID de l'utilisateur à `req` pour l'utiliser dans vos routes
         next();
     } catch (error) {
-        res.status(401).json({ error: "Token manquant ou invalide" });
+        res.status(401).json({ error: "Token invalide ou expiré" });
     }
 };
