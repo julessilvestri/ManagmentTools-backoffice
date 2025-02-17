@@ -34,7 +34,7 @@ exports.getContacts = async (req, res) => {
         const userId = decoded.userId;
 
         const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: 1 });
 
         const contactsMap = messages.reduce((map, message) => {
             const contactId = message.sender.toString() === userId ? message.receiver.toString() : message.sender.toString();
