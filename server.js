@@ -45,7 +45,7 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "Documentation de l'API pour la gestion des tâches et le chat"
         },
-        servers: [{ url: "http://localhost:3000/api/v1", description: "Serveur local" }],
+        servers: [{ url: "http://process.env.MONGO_URI" + process.env.IP_SERVER + "3000/api/v1", description: "Serveur distant" }],
         components: {
             securitySchemes: {
                 bearerAuth: {
