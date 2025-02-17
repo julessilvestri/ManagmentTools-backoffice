@@ -90,7 +90,7 @@ exports.login = async (req, res) => {
         });
 
         // Répondre avec un message de succès
-        res.status(200).json({ message: "Connexion réussie" });
+        res.status(200).json({ token, userId: user._id });
     } catch (error) {
         res.status(500).json({ error: "Erreur serveur" });
     }
