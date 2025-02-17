@@ -92,8 +92,6 @@ exports.getContacts = async (req, res) => {
             };
         });
 
-        contactList.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-
         res.status(200).json(contactList);
     } catch (error) {
         handleError(res, error, 401);
