@@ -87,20 +87,38 @@ const verifyToken = (token) => {
     });
 };
 
-// Gestion des événements Socket.IO
-io.on('connection', (socket) => {
-    socket.on('joinRoom', (userId) => {
-        socket.join(userId);
+io.on("connection", (socket) => {
+    // Lorsqu'un client rejoint une room spécifique à une conversation
+    socket.on("joinRoom", (roomId) => {
+        socket.join(roomId);  // Joindre une room basée sur la conversation
     });
 
-    socket.on('sendMessage', (messageData) => {
-        socket.to(messageData.receiverId).emit('receiveMessage', messageData);
+    // Lors de l'envoi d'un message
+    socket.on("sendMessage", (messageData) => {
+        const roomId = generateRoomId(messageData.senderId, messageData.receiverId);
+        
+        // Vérifiez d'abord si le destinataire est dans la room (sinon, vous ne diffusez pas)
+        if (socket.rooms.has(roomId)) {
+            // Diffuser le message dans la room spécifique à la conversation
+            socket.to(roomId).emit("receiveMessage", messageData);
+        }
     });
 
-    // Gestion de la déconnexion de l'utilisateur
-    socket.on('disconnect', () => {
+    // Lorsqu'un client se déconnecte
+    socket.on("disconnect", () => {
+        // Vous pouvez récupérer toutes les rooms auxquelles ce socket appartient
+        const rooms = Object.keys(socket.rooms);
+        
+        // Si le socket appartient à une ou plusieurs rooms, on le retire de chaque room
+        rooms.forEach((roomId) => {
+            socket.leave(roomId);
+        });
     });
 });
+
+const generateRoomId = (user1, user2) => {
+    return [user1, user2].sort().join("_");
+};
 
 // Démarrer le serveur seulement si ce n'est pas un test
 if (process.env.NODE_ENV !== "test") {
