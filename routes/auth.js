@@ -17,9 +17,11 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               lastname:
  *                 type: string
- *               email:
+ *               firstname:
+ *                 type: string
+ *               username:
  *                 type: string
  *               password:
  *                 type: string
@@ -30,9 +32,10 @@ const router = express.Router();
  *         description: Erreur de validation ou utilisateur existant
  */
 router.post('/register', [
-    check('name', 'Le nom est requis').not().isEmpty(),
-    check('email', 'Un email valide est requis').isEmail(),
-    check('password', 'Le mot de passe doit faire au moins 6 caractères').isLength({ min: 6 })
+    check('lastname', 'Le nom est requis').not().isEmpty(),
+    check('firstname', 'Le prénom est requis').not().isEmpty(),
+    check('username', 'Le nom d\'utilisateur est requis').not().isEmpty(),
+    check('password', 'Le mot de passe doit faire au moins 8 caractères').isLength({ min: 8 })
 ], authController.register);
 
 /**
@@ -48,7 +51,7 @@ router.post('/register', [
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               username:
  *                 type: string
  *               password:
  *                 type: string
@@ -59,7 +62,7 @@ router.post('/register', [
  *         description: Identifiants invalides
  */
 router.post('/login', [
-    check('email', 'Un email valide est requis').isEmail(),
+    check('username', 'Un nom d\'utilisateur valide est requis').exists(),
     check('password', 'Le mot de passe est requis').exists()
 ], authController.login);
 

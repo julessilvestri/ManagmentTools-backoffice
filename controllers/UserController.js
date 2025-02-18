@@ -5,15 +5,16 @@ exports.searchUser = async (req, res) => {
         const { query } = req.query;
 
         if (!query) {
-            return res.status(400).json({ error: "Veuillez fournir un username ou un email à rechercher." });
+            return res.status(400).json({ error: "Veuillez fournir un nom, un prénom ou un nom d'utilisateur à rechercher." });
         }
 
         const users = await User.find({
             $or: [
-                { name: { $regex: query, $options: "i" } },
-                { email: { $regex: query, $options: "i" } }
+                { lastname: { $regex: query, $options: "i" } },
+                { firstname: { $regex: query, $options: "i" } },
+                { username: { $regex: query, $options: "i" } }
             ]
-        }).select("name email");
+        }).select("lastname firstname username");
 
         res.status(200).json(users);
     } catch (error) {

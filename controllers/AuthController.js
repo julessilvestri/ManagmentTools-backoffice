@@ -28,10 +28,10 @@ exports.register = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { name, email, password } = req.body;
+        const { lastname, firstname, username, password } = req.body;
 
         // Vérifier si l'utilisateur existe déjà
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({ error: "Cet email est déjà utilisé" });
         }
@@ -40,7 +40,7 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Créer un nouvel utilisateur
-        const user = new User({ name, email, password: hashedPassword });
+        const user = new User({ lastname, firstname, username, password: hashedPassword });
         await user.save();
 
         res.status(201).json({ message: "Utilisateur créé avec succès" });
@@ -57,10 +57,10 @@ exports.login = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { email, password } = req.body;
+        const { username, password } = req.body;
 
         // Vérifier si l'utilisateur existe
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ username });
         if (!user) {
             return res.status(400).json({ error: "Identifiants invalides" });
         }
@@ -76,17 +76,17 @@ exports.login = async (req, res) => {
 
         // Définir un cookie avec le token et l'ID de l'utilisateur
         res.cookie('token', token, {
-            httpOnly: true,  // Empêche l'accès au cookie depuis le client JavaScript
-            secure: process.env.NODE_ENV === 'production', // Assurez-vous que le cookie est envoyé en HTTPS en production
-            maxAge: 3600000, // Le cookie expire après 1 heure (3600000 ms)
-            sameSite: 'Strict' // Empêche l'envoi du cookie sur des requêtes cross-origin
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600000,
+            sameSite: 'None'
         });
 
         res.cookie('userId', user._id.toString(), {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 3600000,
-            sameSite: 'Strict'
+            sameSite: 'None'
         });
 
         // Répondre avec un message de succès
