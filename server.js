@@ -88,33 +88,36 @@ const verifyToken = (token) => {
 };
 
 io.on("connection", (socket) => {
-    // Lorsqu'un client rejoint une room spécifique à une conversation
-    socket.on("joinRoom", (roomId) => {
-        socket.join(roomId);  // Joindre une room basée sur la conversation
+
+    // Joindre une room correspondant à l'ID de l'utilisateur
+    socket.on("joinRoom", (userId) => {
+        if (userId) {
+            socket.join(userId);
+        }
     });
 
-    // Lors de l'envoi d'un message
+    // Lorsqu'un message est envoyé
     socket.on("sendMessage", (messageData) => {
-        const roomId = generateRoomId(messageData.senderId, messageData.receiverId);
-        
-        // Vérifiez d'abord si le destinataire est dans la room (sinon, vous ne diffusez pas)
-        if (socket.rooms.has(roomId)) {
-            // Diffuser le message dans la room spécifique à la conversation
-            socket.to(roomId).emit("receiveMessage", messageData);
+
+        if (!messageData.senderId || !messageData.receiverId) {
+            console.error("Message invalide : senderId ou receiverId manquant");
+            return;
         }
+
+        // Création de la room unique pour cette conversation
+        const roomId = generateRoomId(messageData.senderId, messageData.receiverId);
+
+        io.to(messageData.senderId).emit("receiveMessage", messageData);
+
+        io.to(messageData.receiverId).emit("receiveMessage", messageData);
+
     });
 
     // Lorsqu'un client se déconnecte
     socket.on("disconnect", () => {
-        // Vous pouvez récupérer toutes les rooms auxquelles ce socket appartient
-        const rooms = Object.keys(socket.rooms);
-        
-        // Si le socket appartient à une ou plusieurs rooms, on le retire de chaque room
-        rooms.forEach((roomId) => {
-            socket.leave(roomId);
-        });
     });
 });
+
 
 const generateRoomId = (user1, user2) => {
     return [user1, user2].sort().join("_");
