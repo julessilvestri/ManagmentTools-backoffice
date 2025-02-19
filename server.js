@@ -56,7 +56,7 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "Documentation de l'API pour la gestion des tâches et le chat"
         },
-        servers: [{ url: "http://" + process.env.IP_SERVER + ":3000/api/v1", description: "Serveur distant" }],
+        servers: [{ url: "http://" + process.env.IP_SERVER + ":" + process.env.PORT + "/api/v1", description: "Serveur distant" }],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -125,8 +125,8 @@ const generateRoomId = (user1, user2) => {
 
 // Démarrer le serveur seulement si ce n'est pas un test
 if (process.env.NODE_ENV !== "test") {
-    server.listen(process.env.PORT || 3000, () => {
-        console.log(`✅ Serveur démarré sur le port ${process.env.PORT || 3000}`);
+    server.listen(process.env.PORT || 5000, () => {
+        console.log(`✅ Serveur démarré sur le port ${process.env.PORT || 5000}`);
     });
 }
 
