@@ -14,7 +14,7 @@ exports.searchUser = async (req, res) => {
                 { firstname: { $regex: query, $options: "i" } },
                 { username: { $regex: query, $options: "i" } }
             ]
-        }).select("lastname firstname username");
+        }).select("lastname firstname username createdAt");
 
         res.status(200).json(users);
     } catch (error) {

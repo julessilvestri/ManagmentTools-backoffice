@@ -20,8 +20,8 @@ exports.getMessages = async (req, res) => {
         const decoded = verifyToken(req);
         const userId = decoded.userId;
         const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
-            .populate('sender', 'lastname firstname username')
-            .populate('receiver', 'lastname firstname username');
+            .populate('sender', 'lastname firstname username createdAt')
+            .populate('receiver', 'lastname firstname username createdAt');
         res.status(200).json(messages);
     } catch (error) {
         handleError(res, error, 401);
@@ -55,14 +55,14 @@ exports.getContacts = async (req, res) => {
 
         // Récupérer les informations des contacts
         const contacts = await User.find({ _id: { $in: [...contactsMap.keys()] } })
-            .select("lastname firstname username");
+            .select("lastname firstname username createdAt");
 
         // Récupérer les informations des expéditeurs et destinataires
         const senderIds = [...new Set(messages.map(message => message.sender.toString()))];
         const receiverIds = [...new Set(messages.map(message => message.receiver.toString()))];
 
-        const senders = await User.find({ _id: { $in: senderIds } }).select("lastname firstname username");
-        const receivers = await User.find({ _id: { $in: receiverIds } }).select("lastname firstname username");
+        const senders = await User.find({ _id: { $in: senderIds } }).select("lastname firstname username createdAt");
+        const receivers = await User.find({ _id: { $in: receiverIds } }).select("lastname firstname username createdAt");
 
         // Créer la liste des contacts avec leur dernier message, triée par lastMessageTime
         const contactList = contacts.map(contact => {
@@ -75,19 +75,22 @@ exports.getContacts = async (req, res) => {
                 lastname: contact.lastname,
                 firstname: contact.firstname,
                 username: contact.username,
+                createdAt: contact.createdAt,
                 lastMessage: contactData.lastMessage,
                 lastMessageTime: contactData.lastMessageTime,
                 sender: {
                     _id: senderDetails._id,
                     lastname: senderDetails.lastname,
                     firstname: senderDetails.firstname,
-                    username: senderDetails.username
+                    username: senderDetails.username,
+                    createdAt: senderDetails.createdAt
                 },
                 receiver: {
                     _id: receiverDetails._id,
                     lastname: receiverDetails.lastname,
                     firstname: receiverDetails.firstname,
-                    username: receiverDetails.username
+                    username: receiverDetails.username,
+                    createdAt: receiverDetails.createdAt
                 }
             };
         }).sort((a, b) => b.lastMessageTime - a.lastMessageTime);
@@ -114,8 +117,8 @@ exports.getConversation = async (req, res) => {
             ]
         })
             .sort({ createdAt: 1 })
-            .populate("sender", "lastname firstname username")
-            .populate("receiver", "lastname firstname username");
+            .populate("sender", "lastname firstname username createdAt")
+            .populate("receiver", "lastname firstname username createdAt");
 
         res.status(200).json(messages);
     } catch (error) {
