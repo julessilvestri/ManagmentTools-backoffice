@@ -30,7 +30,7 @@ app.use(cookieParser());
 
 // CORS pour Express
 const corsOptions = {
-    origin: "http://localhost:8080", // Front-end qui fait les requêtes
+    origin: "http://" + process.env.IP_SERVER + ":3000", // Front-end qui fait les requêtes
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Si vous avez besoin de gérer des cookies ou des sessions
@@ -40,7 +40,7 @@ app.use(cors(corsOptions));
 // Configuration de Socket.IO avec CORS
 const io = socketIo(server, {
     cors: {
-        origin: ["http://localhost:8080"], // Front-end qui fait les requêtes
+        origin: ["http://" + process.env.IP_SERVER + ":3000"], // Front-end qui fait les requêtes
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true, // Gérer les cookies/sessions
