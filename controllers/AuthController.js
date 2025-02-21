@@ -9,17 +9,6 @@ const handleError = (res, error, statusCode = 500) => {
     res.status(statusCode).json({ error: error.message || "Erreur serveur" });
 };
 
-// Fonction pour vérifier les identifiants d'un utilisateur
-const verifyUserCredentials = async (email, password) => {
-    const user = await User.findOne({ email });
-    if (!user) throw new Error("Identifiants invalides");
-    
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new Error("Identifiants invalides");
-    
-    return user;
-};
-
 // Inscription d'un utilisateur
 exports.register = async (req, res) => {
     try {

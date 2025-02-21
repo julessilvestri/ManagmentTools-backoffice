@@ -56,7 +56,7 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "Documentation de l'API pour la gestion des tâches et le chat"
         },
-        servers: [{ url: "http://" + process.env.IP_SERVER + ":" + process.env.PORT + "/api/v1", description: "Serveur distant" }],
+        servers: [{ url: `http://${process.env.IP_SERVER}:${process.env.PORT}/api/v1`, description: "Serveur distant" }],
         components: {
             securitySchemes: {
                 bearerAuth: {
