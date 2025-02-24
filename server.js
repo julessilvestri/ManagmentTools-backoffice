@@ -8,8 +8,10 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const messagesRoutes = require('./routes/messages');
 const authRoutes = require('./routes/auth');
+const messagesRoutes = require('./routes/messages');
+const projectsRoutes = require('./routes/projects');
+const tasksRoutes = require('./routes/tasks');
 const usersRoutes = require('./routes/users');
 const cors = require('cors');
 
@@ -76,6 +78,8 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/messages', messagesRoutes);
+app.use('/api/v1/projects', projectsRoutes);
+app.use('/api/v1/tasks', tasksRoutes);
 app.use('/api/v1/users', usersRoutes);
 
 const verifyToken = (token) => {
@@ -108,11 +112,9 @@ io.on("connection", (socket) => {
         const roomId = generateRoomId(messageData.senderId, messageData.receiverId);
 
         io.to(messageData.senderId).emit("receiveMessage", messageData);
-
         io.to(messageData.receiverId).emit("receiveMessage", messageData);
 
     });
-
     // Lorsqu'un client se déconnecte
     socket.on("disconnect", () => {
     });
