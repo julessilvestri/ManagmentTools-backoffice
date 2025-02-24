@@ -20,7 +20,7 @@ const TaskSchema = new mongoose.Schema({
         ref: 'Project',
         required: true
     },
-    creator: {
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -29,8 +29,6 @@ const TaskSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-
-    attachments: [{ type: String }],
 
     comments: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

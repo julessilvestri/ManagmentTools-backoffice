@@ -18,7 +18,7 @@ const getProjectsForUser = async (userId) => {
  * @param {String} projectId - L'ID du projet
  * @returns {Object} - Détails du projet
  */
-const getProjectByIdAndValidateMember = async (userId, projectId) => {
+const getProjectByIdAndValidateMember = async (userId, projectId) => {    
     const project = await Project.findById(projectId)
         .populate('owner', 'lastname firstname username')
         .populate('members', 'lastname firstname username');

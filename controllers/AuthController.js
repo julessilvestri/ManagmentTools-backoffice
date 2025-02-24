@@ -46,12 +46,12 @@ exports.login = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { username, password } = req.body;
+        const { username, password } = req.body;        
 
         // Vérifier si l'utilisateur existe
         const user = await User.findOne({ username });
         if (!user) {
-            return res.status(400).json({ error: "Identifiants invalides" });
+            return res.status(400).json({ error: "Nom d'utilisateur inconnu" });
         }
 
         // Vérifier le mot de passe

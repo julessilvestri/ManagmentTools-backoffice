@@ -5,16 +5,28 @@ const taskController = require('../controllers/TaskController');
 
 /**
  * @swagger
+ * tags:
+ *   name: Tasks
+ *   description: Gestion des tâches d'un projet
+ */
+
+/**
+ * @swagger
  * /tasks:
  *   post:
  *     summary: Créer une nouvelle tâche pour un projet
  *     tags: [Tasks]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - projectId
+ *               - title
  *             properties:
  *               projectId:
  *                 type: string
@@ -27,7 +39,34 @@ const taskController = require('../controllers/TaskController');
  *                 description: Description de la tâche
  *               status:
  *                 type: string
- *                 description: "Statut de la tâche (ex: Pending, In Progress, Completed)"
+ *                 enum: [Pending, In Progress, Completed]
+ *                 description: Statut de la tâche
+ *               priority:
+ *                 type: string
+ *                 enum: [Low, Medium, High]
+ *                 description: Priorité de la tâche
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Date d'échéance de la tâche
+ *               assignedTo:
+ *                 type: string
+ *                 description: ID de l'utilisateur assigné à la tâche
+ *               comments:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: string
+ *                       description: ID de l'utilisateur ayant commenté
+ *                     message:
+ *                       type: string
+ *                       description: Contenu du commentaire
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Date de création du commentaire
  *     responses:
  *       201:
  *         description: Tâche créée avec succès
@@ -44,6 +83,8 @@ router.post("/", authMiddleware, taskController.createTask);
  *   get:
  *     summary: Récupérer toutes les tâches d'un projet
  *     tags: [Tasks]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -55,7 +96,7 @@ router.post("/", authMiddleware, taskController.createTask);
  *       200:
  *         description: Liste des tâches récupérées avec succès
  *       401:
- *         description: Token manquant ou invalide
+ *         description: Accès interdit ou token invalide
  *       500:
  *         description: Erreur serveur
  */
@@ -67,6 +108,8 @@ router.get("/:projectId", authMiddleware, taskController.getTasksByProject);
  *   get:
  *     summary: Récupérer une tâche spécifique par son ID
  *     tags: [Tasks]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: taskId
@@ -90,6 +133,8 @@ router.get("/task/:taskId", authMiddleware, taskController.getTaskById);
  *   put:
  *     summary: Mettre à jour une tâche existante
  *     tags: [Tasks]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: taskId
@@ -112,12 +157,41 @@ router.get("/task/:taskId", authMiddleware, taskController.getTaskById);
  *                 description: Description de la tâche
  *               status:
  *                 type: string
- *                 description: "Statut de la tâche (ex: Pending, In Progress, Completed)"
+ *                 enum: [Pending, In Progress, Completed]
+ *                 description: Statut de la tâche
+ *               priority:
+ *                 type: string
+ *                 enum: [Low, Medium, High]
+ *                 description: Priorité de la tâche
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Date d'échéance de la tâche
+ *               assignedTo:
+ *                 type: string
+ *                 description: ID de l'utilisateur assigné à la tâche
+ *               comments:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: string
+ *                       description: ID de l'utilisateur ayant commenté
+ *                     message:
+ *                       type: string
+ *                       description: Contenu du commentaire
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Date de création du commentaire
  *     responses:
  *       200:
  *         description: Tâche mise à jour avec succès
  *       400:
  *         description: Données manquantes ou invalides
+ *       403:
+ *         description: Accès interdit
  *       500:
  *         description: Erreur serveur
  */
@@ -129,6 +203,8 @@ router.put("/task/:taskId", authMiddleware, taskController.updateTask);
  *   delete:
  *     summary: Supprimer une tâche par son ID
  *     tags: [Tasks]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: taskId

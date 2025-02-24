@@ -35,7 +35,7 @@ exports.getProjects = async (req, res) => {
  */
 exports.getProjectById = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user._id.toString();
         const projectId = req.params.id;
 
         const project = await getProjectByIdAndValidateMember(userId, projectId);
@@ -80,7 +80,7 @@ exports.createProject = async (req, res) => {
  */
 exports.addMember = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user._id.toString();
         const { memberId } = req.body;
         const projectId = req.params.id;
 
@@ -104,7 +104,7 @@ exports.addMember = async (req, res) => {
  */
 exports.deleteProject = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user._id.toString();
         const projectId = req.params.id;
 
         await deleteProject(userId, projectId);
