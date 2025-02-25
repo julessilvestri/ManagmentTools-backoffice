@@ -42,6 +42,45 @@ const userController = require('../controllers/UserController');
  */
 router.get("/search", authMiddleware, userController.searchUser);
 
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Récupérer tous les utilisateurs
+ *     description: Permet de récupérer la liste de tous les utilisateurs.
+ *     tags: [Utilisateurs]
+ *     responses:
+ *       200:
+ *         description: Liste des utilisateurs.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     example: "65f0b8e2e7b3f5d123456780"
+ *                   lastname:
+ *                     type: string
+ *                     example: "Dupont"
+ *                   firstname:
+ *                     type: string
+ *                     example: "Jean"
+ *                   username:
+ *                     type: string
+ *                     example: "jeandupont"
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2024-02-15T14:35:00.000Z"
+ *       500:
+ *         description: Erreur serveur.
+ */
+router.get("/", authMiddleware, userController.getUsers);
+
 /**
  * @swagger
  * /users/{userId}:

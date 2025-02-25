@@ -25,6 +25,28 @@ exports.searchUser = async (req, res) => {
 };
 
 /**
+ * Contrôleur pour récupérer tous les utilisateurs.
+ * @route GET /users
+ * @param {Object} req - L'objet de requête Express.
+ * @param {Object} res - L'objet de réponse Express.
+ * @returns {void} - Renvoie la liste des utilisateurs ou un message d'erreur.
+ */
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await UserService.getUsers(req.user._id);
+
+        if (!users || users.length === 0) {
+            return res.status(404).json({ error: "Aucun utilisateur trouvé." });
+        }
+
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des utilisateurs :", error);
+        res.status(500).json({ error: "Erreur interne du serveur." });
+    }
+};
+
+/**
  * Contrôleur pour récupérer un utilisateur par son ID.
  * @route GET /users/:userId
  * @param {Object} req - L'objet de requête Express.

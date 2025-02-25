@@ -26,6 +26,19 @@ const searchUser = async (query) => {
 };
 
 /**
+ * Récupère tous les utilisateurs.
+ * @returns {Promise<Array>} - Liste de tous les utilisateurs.
+ */
+const getUsers = async (userId) => {
+    try {        
+        const users = await User.find({ _id: { $ne: userId } });
+        return users;
+    } catch (error) {
+        throw new Error("Erreur lors de la récupération des utilisateurs.");
+    }
+};
+
+/**
  * Récupère un utilisateur par son ID.
  * @param {string} userId - L'ID de l'utilisateur à rechercher.
  * @returns {Promise<Object>} - L'utilisateur correspondant.
@@ -47,5 +60,6 @@ const getUserById = async (userId) => {
 
 module.exports = {
     searchUser,
+    getUsers,
     getUserById
 };
