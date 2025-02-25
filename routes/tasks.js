@@ -5,19 +5,10 @@ const taskController = require('../controllers/TaskController');
 
 /**
  * @swagger
- * tags:
- *   name: Tasks
- *   description: Gestion des tâches d'un projet
- */
-
-/**
- * @swagger
  * /tasks:
  *   post:
- *     summary: Créer une nouvelle tâche pour un projet
+ *     summary: Créer une nouvelle tâche
  *     tags: [Tasks]
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -25,10 +16,10 @@ const taskController = require('../controllers/TaskController');
  *           schema:
  *             type: object
  *             required:
- *               - projectId
+ *               - workspace
  *               - title
  *             properties:
- *               projectId:
+ *               workspace:
  *                 type: string
  *                 description: ID du projet auquel la tâche appartient
  *               title:
@@ -52,21 +43,6 @@ const taskController = require('../controllers/TaskController');
  *               assignedTo:
  *                 type: string
  *                 description: ID de l'utilisateur assigné à la tâche
- *               comments:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: string
- *                       description: ID de l'utilisateur ayant commenté
- *                     message:
- *                       type: string
- *                       description: Contenu du commentaire
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                       description: Date de création du commentaire
  *     responses:
  *       201:
  *         description: Tâche créée avec succès
@@ -75,41 +51,37 @@ const taskController = require('../controllers/TaskController');
  *       500:
  *         description: Erreur serveur
  */
-router.post("/", authMiddleware, taskController.createTask);
+router.post('/', authMiddleware, taskController.createTask);
 
 /**
  * @swagger
- * /tasks/{projectId}:
+ * /tasks?workspace={workspace}:
  *   get:
- *     summary: Récupérer toutes les tâches d'un projet
+ *     summary: Récupérer toutes les tâches d'un projet spécifique
  *     tags: [Tasks]
- *     security:
- *       - BearerAuth: []
  *     parameters:
- *       - in: path
- *         name: projectId
+ *       - in: query
+ *         name: workspace
  *         required: true
  *         description: ID du projet dont les tâches doivent être récupérées
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Liste des tâches récupérées avec succès
- *       401:
- *         description: Accès interdit ou token invalide
+ *         description: Liste des tâches d'un projet récupérées avec succès
+ *       400:
+ *         description: Paramètre de workspace manquant
  *       500:
  *         description: Erreur serveur
  */
-router.get("/:projectId", authMiddleware, taskController.getTasksByProject);
+router.get('/', authMiddleware, taskController.getTasksByWorkspace);
 
 /**
  * @swagger
- * /tasks/task/{taskId}:
+ * /tasks/{taskId}:
  *   get:
  *     summary: Récupérer une tâche spécifique par son ID
  *     tags: [Tasks]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: taskId
@@ -125,16 +97,14 @@ router.get("/:projectId", authMiddleware, taskController.getTasksByProject);
  *       500:
  *         description: Erreur serveur
  */
-router.get("/task/:taskId", authMiddleware, taskController.getTaskById);
+router.get('/:taskId', authMiddleware, taskController.getTaskById);
 
 /**
  * @swagger
- * /tasks/task/{taskId}:
+ * /tasks/{taskId}:
  *   put:
  *     summary: Mettre à jour une tâche existante
  *     tags: [Tasks]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: taskId
@@ -170,41 +140,24 @@ router.get("/task/:taskId", authMiddleware, taskController.getTaskById);
  *               assignedTo:
  *                 type: string
  *                 description: ID de l'utilisateur assigné à la tâche
- *               comments:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: string
- *                       description: ID de l'utilisateur ayant commenté
- *                     message:
- *                       type: string
- *                       description: Contenu du commentaire
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                       description: Date de création du commentaire
  *     responses:
  *       200:
  *         description: Tâche mise à jour avec succès
  *       400:
  *         description: Données manquantes ou invalides
- *       403:
- *         description: Accès interdit
+ *       404:
+ *         description: Tâche non trouvée
  *       500:
  *         description: Erreur serveur
  */
-router.put("/task/:taskId", authMiddleware, taskController.updateTask);
+router.put('/:taskId', authMiddleware, taskController.updateTask);
 
 /**
  * @swagger
- * /tasks/task/{taskId}:
+ * /tasks/{taskId}:
  *   delete:
  *     summary: Supprimer une tâche par son ID
  *     tags: [Tasks]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: taskId
@@ -215,13 +168,13 @@ router.put("/task/:taskId", authMiddleware, taskController.updateTask);
  *     responses:
  *       200:
  *         description: Tâche supprimée avec succès
- *       403:
- *         description: Accès interdit (vous ne pouvez supprimer que vos propres tâches ou celles de votre projet)
  *       404:
  *         description: Tâche non trouvée
+ *       403:
+ *         description: Accès interdit (vous ne pouvez supprimer que vos propres tâches ou celles de votre projet)
  *       500:
  *         description: Erreur serveur
  */
-router.delete("/task/:taskId", authMiddleware, taskController.deleteTask);
+router.delete('/:taskId', authMiddleware, taskController.deleteTask);
 
 module.exports = router;

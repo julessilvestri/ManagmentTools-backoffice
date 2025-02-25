@@ -1,16 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth');
-const projectController = require('../controllers/ProjectController');
+const workspaceController = require('../controllers/WorkspaceController');
 
 /**
  * @swagger
- * /projects:
+ * /workspaces:
  *   get:
  *     summary: Récupère tous les projets auxquels l'utilisateur a accès
- *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
+ *     tags: [Workspaces]
  *     responses:
  *       200:
  *         description: Liste des projets récupérée avec succès
@@ -19,16 +17,14 @@ const projectController = require('../controllers/ProjectController');
  *       500:
  *         description: Erreur serveur
  */
-router.get("/", authMiddleware, projectController.getProjects);
+router.get("/", authMiddleware, workspaceController.getWorkspaces);
 
 /**
  * @swagger
- * /projects:
+ * /workspaces:
  *   post:
  *     summary: Crée un nouveau projet
- *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
+ *     tags: [Workspaces]
  *     requestBody:
  *       required: true
  *       content:
@@ -52,16 +48,14 @@ router.get("/", authMiddleware, projectController.getProjects);
  *       500:
  *         description: Erreur serveur
  */
-router.post("/", authMiddleware, projectController.createProject);
+router.post("/", authMiddleware, workspaceController.createWorkspace);
 
 /**
  * @swagger
- * /projects/{id}:
+ * /workspaces/{id}:
  *   get:
  *     summary: Récupère un projet par ID
- *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
+ *     tags: [Workspaces]
  *     parameters:
  *       - in: path
  *         name: id
@@ -77,16 +71,14 @@ router.post("/", authMiddleware, projectController.createProject);
  *       500:
  *         description: Erreur serveur
  */
-router.get("/:id", authMiddleware, projectController.getProjectById);
+router.get("/:id", authMiddleware, workspaceController.getWorkspaceById);
 
 /**
  * @swagger
- * /projects/{id}/add-member:
+ * /workspaces/{id}/add-member:
  *   put:
  *     summary: Ajoute un membre à un projet (seul le créateur peut le faire)
- *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
+ *     tags: [Workspaces]
  *     parameters:
  *       - in: path
  *         name: id
@@ -114,16 +106,14 @@ router.get("/:id", authMiddleware, projectController.getProjectById);
  *       500:
  *         description: Erreur serveur
  */
-router.put("/:id/add-member", authMiddleware, projectController.addMember);
+router.put("/:id/add-member", authMiddleware, workspaceController.addMember);
 
 /**
  * @swagger
- * /projects/{id}:
+ * /workspaces/{id}:
  *   delete:
  *     summary: Supprime un projet (seul le créateur peut le faire)
- *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
+ *     tags: [Workspaces]
  *     parameters:
  *       - in: path
  *         name: id
@@ -141,6 +131,6 @@ router.put("/:id/add-member", authMiddleware, projectController.addMember);
  *       500:
  *         description: Erreur serveur
  */
-router.delete("/:id", authMiddleware, projectController.deleteProject);
+router.delete("/:id", authMiddleware, workspaceController.deleteWorkspace);
 
 module.exports = router;

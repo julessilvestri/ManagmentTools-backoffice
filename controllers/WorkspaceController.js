@@ -1,4 +1,4 @@
-const { getProjectsForUser, getProjectByIdAndValidateMember, createProject, addMemberToProject, deleteProject } = require('../services/projectService');
+const { getWorkspacesForUser, getWorkspaceByIdAndValidateMember, createWorkspace, addMemberToWorkspace, deleteWorkspace } = require('../services/WorkspaceService');
 const handleError = require('../utils/handleError');
 
 /**
@@ -11,13 +11,13 @@ const handleError = require('../utils/handleError');
  * 
  * @returns {void} - Retourne une réponse HTTP avec la liste des projets ou une erreur en cas de problème.
  */
-exports.getProjects = async (req, res) => {
+exports.getWorkspaces = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        const projects = await getProjectsForUser(userId);
+        const workspaces = await getWorkspacesForUser(userId);
 
-        res.status(200).json(projects);
+        res.status(200).json(workspaces);
     } catch (error) {
         handleError(res, error, 401);
     }
@@ -33,14 +33,14 @@ exports.getProjects = async (req, res) => {
  * 
  * @returns {void} - Retourne les informations du projet si l'utilisateur est autorisé à y accéder, sinon une erreur.
  */
-exports.getProjectById = async (req, res) => {
+exports.getWorkspaceById = async (req, res) => {
     try {
         const userId = req.user._id.toString();
-        const projectId = req.params.id;
+        const workspaceId = req.params.id;
 
-        const project = await getProjectByIdAndValidateMember(userId, projectId);
+        const workspace = await getWorkspaceByIdAndValidateMember(userId, workspaceId);
 
-        res.status(200).json(project);
+        res.status(200).json(workspace);
     } catch (error) {
         handleError(res, error, 404);
     }
@@ -56,15 +56,24 @@ exports.getProjectById = async (req, res) => {
  * 
  * @returns {void} - Retourne une réponse HTTP avec le projet créé ou une erreur en cas de problème.
  */
-exports.createProject = async (req, res) => {
+exports.createWorkspace = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const projectData = req.body;
-        const newProject = await createProject(userId, projectData);
+        const userId = req.user?._id;
+        if (!userId) {
+            return res.status(401).json({ error: "Utilisateur non authentifié" });
+        }
 
-        res.status(201).json({ message: "Projet créé avec succès", data: newProject });
+        const { name, description } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: "Le nom du projet est requis" });
+        }
+
+        const newWorkspace = await createWorkspace(userId, { name, description });
+
+        res.status(201).json({ message: "Projet créé avec succès", data: newWorkspace });
     } catch (error) {
-        handleError(res, error, 400);
+        handleError(res, error);
     }
 };
 
@@ -82,11 +91,11 @@ exports.addMember = async (req, res) => {
     try {
         const userId = req.user._id.toString();
         const { memberId } = req.body;
-        const projectId = req.params.id;
+        const workspace = req.params.id;
 
-        const updatedProject = await addMemberToProject(userId, projectId, memberId);
+        const updatedWorkspace = await addMemberToWorkspace(userId, workspace, memberId);
 
-        res.status(200).json({ message: "Membre ajouté avec succès", data: updatedProject });
+        res.status(200).json({ message: "Membre ajouté avec succès", data: updatedWorkspace });
     } catch (error) {
         handleError(res, error, 403);
     }
@@ -102,12 +111,12 @@ exports.addMember = async (req, res) => {
  * 
  * @returns {void} - Retourne une réponse HTTP avec un message de succès ou une erreur en cas de problème.
  */
-exports.deleteProject = async (req, res) => {
+exports.deleteWorkspace = async (req, res) => {
     try {
         const userId = req.user._id.toString();
-        const projectId = req.params.id;
+        const workspace = req.params.id;
 
-        await deleteProject(userId, projectId);
+        await deleteWorkspace(userId, workspace);
 
         res.status(200).json({ message: "Projet supprimé avec succès" });
     } catch (error) {

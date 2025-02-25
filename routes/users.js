@@ -10,8 +10,6 @@ const userController = require('../controllers/UserController');
  *     summary: Rechercher un utilisateur par nom ou email
  *     description: Permet de rechercher un utilisateur en fonction de son nom ou email.
  *     tags: [Utilisateurs]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: query
@@ -51,8 +49,6 @@ router.get("/search", authMiddleware, userController.searchUser);
  *     summary: Récupérer un utilisateur par son ID
  *     description: Retourne les informations d'un utilisateur spécifique en fonction de son ID.
  *     tags: [Utilisateurs]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId

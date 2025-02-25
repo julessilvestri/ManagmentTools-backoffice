@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const authRoutes = require('./routes/auth');
 const messagesRoutes = require('./routes/messages');
-const projectsRoutes = require('./routes/projects');
+const workspacesRoutes = require('./routes/workspaces');
 const tasksRoutes = require('./routes/tasks');
 const usersRoutes = require('./routes/users');
 const cors = require('cors');
@@ -58,7 +58,7 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "Documentation de l'API pour la gestion des tâches et le chat"
         },
-        servers: [{ url: `http://${process.env.IP_SERVER}:${process.env.PORT}/api/v1`, description: "Serveur distant" }],
+        servers: [{ url: `http://${process.env.IP_SERVER}:${process.env.PORT}/api/v1`, description: "Serveur local" }],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -78,7 +78,7 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/messages', messagesRoutes);
-app.use('/api/v1/projects', projectsRoutes);
+app.use('/api/v1/workspaces', workspacesRoutes);
 app.use('/api/v1/tasks', tasksRoutes);
 app.use('/api/v1/users', usersRoutes);
 

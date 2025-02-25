@@ -15,9 +15,9 @@ const TaskSchema = new mongoose.Schema({
     },
     dueDate: { type: Date },
 
-    project: {
+    workspace: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Project',
+        ref: 'Workspace',
         required: true
     },
     owner: {

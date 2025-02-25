@@ -42,8 +42,6 @@ router.get("/contacts", authMiddleware, messageController.getContacts);
  *     summary: Récupérer tous les messages d'une conversation entre deux utilisateurs
  *     description: Retourne tous les messages échangés entre l'utilisateur connecté et un autre utilisateur spécifique.
  *     tags: [Messages]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -132,32 +130,5 @@ router.get("/conversation/:userId", authMiddleware, messageController.getConvers
  *         description: Erreur serveur
  */
 router.post("/", authMiddleware, messageController.createMessage);
-
-/**
- * @swagger
- * /messages/{id}:
- *   delete:
- *     summary: Supprime un message par ID (nécessite un token)
- *     tags: [Messages]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID du message à supprimer
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Message supprimé avec succès
- *       401:
- *         description: Non autorisé (token manquant ou invalide)
- *       404:
- *         description: Message non trouvé
- *       500:
- *         description: Erreur serveur
- */
-router.delete("/:id", authMiddleware, messageController.deleteMessage);
 
 module.exports = router;
