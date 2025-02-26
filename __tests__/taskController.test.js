@@ -42,7 +42,7 @@ beforeAll(async () => {
         assignedTo: user._id.toString(),
         owner: user._id.toString(),
         workspace: workspace,
-        status: "Pending",
+        status: "Backlog",
         priority: "Low",
         dueDate: "2025-12-31"
     });
@@ -89,7 +89,7 @@ describe("TaskController - Gestion des tâches", () => {
             title: "New Task",
             workspaceId: workspace._id,
             assignedTo: user._id,
-            status: "Pending",
+            status: "Backlog",
             priority: "Medium",
             dueDate: "2025-12-31"
         };

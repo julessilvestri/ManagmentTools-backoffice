@@ -19,7 +19,7 @@ const taskController = require('../controllers/TaskController');
  *               - workspace
  *               - title
  *             properties:
- *               workspace:
+ *               workspaceId:
  *                 type: string
  *                 description: ID du projet auquel la tâche appartient
  *               title:
@@ -30,11 +30,11 @@ const taskController = require('../controllers/TaskController');
  *                 description: Description de la tâche
  *               status:
  *                 type: string
- *                 enum: [Pending, In Progress, Completed]
+ *                 enum: [Backlog, ToDo, InProgress, Done]
  *                 description: Statut de la tâche
  *               priority:
  *                 type: string
- *                 enum: [Low, Medium, High]
+ *                 enum: [Low, Medium, High, Urgent]
  *                 description: Priorité de la tâche
  *               dueDate:
  *                 type: string
@@ -127,11 +127,11 @@ router.get('/:taskId', authMiddleware, taskController.getTaskById);
  *                 description: Description de la tâche
  *               status:
  *                 type: string
- *                 enum: [Pending, In Progress, Completed]
+ *                 enum: [Backlog, ToDo, InProgress, Done]
  *                 description: Statut de la tâche
  *               priority:
  *                 type: string
- *                 enum: [Low, Medium, High]
+ *                 enum: [Low, Medium, High, Urgent]
  *                 description: Priorité de la tâche
  *               dueDate:
  *                 type: string
